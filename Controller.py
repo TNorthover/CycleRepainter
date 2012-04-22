@@ -12,14 +12,15 @@ class Controller(QtCore.QObject):
         self.scene_model = QtGui.QGraphicsScene()
         self.ui.display.setScene(self.scene_model)
 
-        # FIXME: Should be dynamic
-        self.ui.display.scale(50, 50)
+        # FIXME: Should be dynamic, scrolling should be limited,
+        # perhaps. Zoomable.
+        self.ui.display.scale(100, 100)
 
         self.surface = RiemannSurface()
         self.indets = None
 
-        self.surface_renderer = CentralSurfaceRenderer(self.surface)
-        self.scene_model.addItem(self.surface_renderer)
+        csr = CentralSurfaceRenderer(self.scene_model, self.surface)
+        self.surface_renderer = csr
 
         self.paths = []
         self.paths_model = None # For the listview
@@ -28,9 +29,9 @@ class Controller(QtCore.QObject):
         self.surfaceChanged()
 
     def connectSlots(self):
-        self.ui.equation.editingFinished.connect(self.surfaceChanged)
-        
+        self.ui.equation.editingFinished.connect(self.surfaceChanged)        
         self.ui.projection_variable.currentIndexChanged.connect(self.setProjection)
+        self.ui.primary_mode.currentChanged.connect(self.setPrimaryMode)
 
     def updatePermittedProjections(self):
         '''Called when the equation defining the Riemann surface is
@@ -55,6 +56,16 @@ class Controller(QtCore.QObject):
     # Signals:
 
     # Slots:
+        
+    def setPrimaryMode(self, index):
+        '''Currently there are two modes: editing the surface itself, and
+        editing paths defined on that surface. The mode in use should be
+        determined by the active tab at the bottom.'''
+        if index == 0:
+            self.surface_renderer.setEditMode(True)
+        else:
+            self.surface_renderer.setEditMode(False)
+
 
     def surfaceChanged(self):
         '''Deals with the defining-equation of the Riemann surface being changed'''
