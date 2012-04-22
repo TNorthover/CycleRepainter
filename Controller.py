@@ -60,12 +60,13 @@ class Controller(QtCore.QObject):
         '''Deals with the defining-equation of the Riemann surface being changed'''
         new_text = self.ui.equation.text()
         self.surface.setEquation(new_text)
-        self.surface_renderer.surfaceChanged(self.surface)
+        self.surface_renderer.surfaceOrProjectionChanged(self.surface)
         self.updatePermittedProjections()
         # FIXME: highlight incorrect syntax
 
     def setProjection(self, idx):
         self.surface.setProjectsOnto(self.indets[idx])
+        self.surface_renderer.surfaceOrProjectionChanged(self.surface)
 
 
     # modeChanged (editing surface, editing paths)
