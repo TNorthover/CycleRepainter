@@ -3,14 +3,22 @@ from sympy import Dummy
 
 class RiemannSurface:
     def __init__(self, eqn_text='y**2 - x**4 + 1'):
+        self.equation = parse_expr('42')
         self.setEquation(eqn_text)
 
     def setEquation(self, text):
-        self.equation = parse_expr(text)
-        assert(self.equation.is_polynomial()) # FIXME: Convert to sensible raise
+        # FIXME: This is bad long-term. At least it should be subject
+        # to some "Maple compatibility" flag
+        text = text.replace('^', '**')
 
-        self.equation = self.equation.as_poly()
-        assert(len(self.equation.gens) == 2)
+        new_equation = parse_expr(text)
+        assert(new_equation.is_polynomial()) # FIXME: Convert to sensible raise
+
+        assert(len(new_equation.free_symbols) == 2)
+        if self.equation.free_symbols == new_equation.free_symbols:
+            self.equation = new_equation.as_poly(self.equation.gens)
+        else:
+            self.equation = new_equation.as_poly()
 
     def indeterminates(self):
         '''Returns a list of sympy symbols representing each
