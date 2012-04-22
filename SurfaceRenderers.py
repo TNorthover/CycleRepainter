@@ -3,8 +3,11 @@ from PySide.QtGui import QGraphicsItem, QGraphicsEllipseItem, QGraphicsLineItem
 from PySide.QtGui import QPen, QBrush
 from PySide.QtCore import QRectF, QPointF, QLineF
 from PySide.QtCore import Qt, QObject
+from PySide import QtCore
 
 class CentralSurfaceRenderer(QObject):
+    centralPointMoved = QtCore.Signal(QPointF)
+
     def __init__(self, scene, surface):
         super(CentralSurfaceRenderer, self).__init__()
         self.scene = scene
@@ -99,6 +102,7 @@ class CentralPoint(QGraphicsEllipseItem):
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionHasChanged:
             self.renderer.centre = self.pos()
+            self.renderer.centralPointMoved.emit(self.pos())
             for line_item in self.renderer.lines:
                 l = line_item.line()
                 l.setP1(self.renderer.centre)

@@ -32,6 +32,7 @@ class Controller(QtCore.QObject):
         self.ui.equation.editingFinished.connect(self.surfaceChanged)        
         self.ui.projection_variable.currentIndexChanged.connect(self.setProjection)
         self.ui.primary_mode.currentChanged.connect(self.setPrimaryMode)
+        self.surface_renderer.centralPointMoved.connect(self.centralPointDragged)
 
     def updatePermittedProjections(self):
         '''Called when the equation defining the Riemann surface is
@@ -78,6 +79,13 @@ class Controller(QtCore.QObject):
     def setProjection(self, idx):
         self.surface.setProjectsOnto(self.indets[idx])
         self.surface_renderer.surfaceOrProjectionChanged(self.surface)
+
+    def centralPointSet(self, new_text):
+        pass
+
+    def centralPointDragged(self, new_point):
+        text = '%f+%f*I' % (new_point.x(), new_point.y())
+        self.ui.central_point.setText(text)
 
 
     # modeChanged (editing surface, editing paths)
