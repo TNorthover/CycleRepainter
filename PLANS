@@ -1,0 +1,15 @@
+Tick/cross icon for surface commit/revert
+Tooltip for equation entry area
+While entering surface, display bases on canvas.
+Drag central point around, lines move: need to precompute branches
+  whenever eqn changes. Cheap enough?
+Surface details greyed when editing paths. Vice versa editing surface.
+For branches:
+    numpy can give all roots to a univariate polynomial (numpy.roots)
+    sympy.discriminant exists, defines branch points.
+from sympy.parsing.sympy_parser import parse_expr:
+    ** is expnonentiation (s/^/**/g should be sufficient)
+Projection autodetects variables from eqn.
+If focus leaves eqn and coords invalid, reset to empty (& stop showing
+branches).
+Thicker line for selected path
