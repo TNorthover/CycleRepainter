@@ -25,14 +25,22 @@ class Controller(QtCore.QObject):
         self.paths = []
         self.paths_model = None # For the listview
 
-        self.connectSlots()
+        self._connectSlots()
+        self._setStandardIcons()
+
         self.surfaceChanged()
 
-    def connectSlots(self):
+    def _connectSlots(self):
         self.ui.equation.editingFinished.connect(self.surfaceChanged)        
         self.ui.projection_variable.currentIndexChanged.connect(self.setProjection)
         self.ui.primary_mode.currentChanged.connect(self.setPrimaryMode)
         self.surface_renderer.centralPointMoved.connect(self.centralPointDragged)
+
+    def _setStandardIcons(self):
+        # Unfortunately Qt Designer doesn't have a way to set the
+        # standard icons yet so we have to do it manually here.
+        self.ui.add_path.setIcon(QtGui.QIcon.fromTheme('list-add'))
+        self.ui.delete_path.setIcon(QtGui.QIcon.fromTheme('list-remove'))
 
     def updatePermittedProjections(self):
         '''Called when the equation defining the Riemann surface is
