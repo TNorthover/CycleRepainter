@@ -1,3 +1,4 @@
+from sympy.parsing.sympy_parser import parse_expr
 from PySide import QtCore, QtGui
 from PySide.QtCore import QRectF
 
@@ -14,7 +15,8 @@ class Controller(QtCore.QObject):
 
         # FIXME: Should be dynamic, scrolling should be limited,
         # perhaps. Zoomable.
-        self.ui.display.scale(100, 100)
+        # N.b. reflection in Y.
+        self.ui.display.scale(100, -100)
 
         self.surface = RiemannSurface()
         self.indets = None
@@ -25,22 +27,38 @@ class Controller(QtCore.QObject):
         self.paths = []
         self.paths_model = None # For the listview
 
+        self.scroll_locked = False
+
         self._connectSlots()
         self._setStandardIcons()
 
         self.surfaceChanged()
+        
+        # QGraphicsView::fitInView(QRectF&, Qt::AspectRatioMode) to set zoom.
+        # Scroll wheel for zoom too.
+        # May want to lock scroll-bars on or off
 
     def _connectSlots(self):
         self.ui.equation.editingFinished.connect(self.surfaceChanged)        
         self.ui.projection_variable.currentIndexChanged.connect(self.setProjection)
         self.ui.primary_mode.currentChanged.connect(self.setPrimaryMode)
-        self.surface_renderer.centralPointMoved.connect(self.centralPointDragged)
+        self.surface_renderer.centralPointDragged.connect(self.centralPointDragged)
+        self.ui.central_point.editingFinished.connect(self.centralPointSetTextually)
 
     def _setStandardIcons(self):
         # Unfortunately Qt Designer doesn't have a way to set the
         # standard icons yet so we have to do it manually here.
         self.ui.add_path.setIcon(QtGui.QIcon.fromTheme('list-add'))
         self.ui.delete_path.setIcon(QtGui.QIcon.fromTheme('list-remove'))
+        self.ui.zoom_in.setIcon(QtGui.QIcon.fromTheme('zoom-in'))
+        self.ui.zoom_out.setIcon(QtGui.QIcon.fromTheme('zoom-out'))
+        self._setScrollLockIcon()
+
+    def _setScrollLockIcon(self):
+        if self.scroll_locked:
+            self.ui.scroll_lock.setIcon(QtGui.QIcon.fromTheme('object-locked'))
+        else:
+          self.ui.scroll_lock.setIcon(QtGui.QIcon.fromTheme('object-unlocked'))
 
     def updatePermittedProjections(self):
         '''Called when the equation defining the Riemann surface is
@@ -94,6 +112,14 @@ class Controller(QtCore.QObject):
     def centralPointDragged(self, new_point):
         text = '%f+%f*I' % (new_point.x(), new_point.y())
         self.ui.central_point.setText(text)
+
+    def centralPointSetTextually(self):
+        new_point = self.ui.central_point.text()
+        try:
+            new_point = complex(parse_expr(new_point))
+            self.surface_renderer.setCentralPoint(new_point)
+        except ValueError:
+            return
 
 
     # modeChanged (editing surface, editing paths)

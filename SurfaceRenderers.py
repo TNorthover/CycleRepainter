@@ -6,7 +6,7 @@ from PySide.QtCore import Qt, QObject
 from PySide import QtCore
 
 class CentralSurfaceRenderer(QObject):
-    centralPointMoved = QtCore.Signal(QPointF)
+    centralPointDragged = QtCore.Signal(QPointF)
 
     def __init__(self, scene, surface):
         super(CentralSurfaceRenderer, self).__init__()
@@ -22,17 +22,20 @@ class CentralSurfaceRenderer(QObject):
         self.surface = surface
         self.branches = self.surface.finiteBranchPoints()
 
-        # First remove all existing data
-        map(self.scene.removeItem, self.items)
-        self.items = []
-
-        self._addItems()
+        self._recreateScene()
 
     def setEditMode(self, editing):
         self.edit_mode = editing
+        self._recreateScene()
 
+    def setCentralPoint(self, new_coords):
+        self.centre = QPointF(new_coords.real, new_coords.imag)
+        self._recreateScene()
+
+    def _recreateScene(self):
         map(self.scene.removeItem, self.items)
         self.items = []
+
         self._addItems()
 
     def _addItems(self):
@@ -102,7 +105,7 @@ class CentralPoint(QGraphicsEllipseItem):
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionHasChanged:
             self.renderer.centre = self.pos()
-            self.renderer.centralPointMoved.emit(self.pos())
+            self.renderer.centralPointDragged.emit(self.pos())
             for line_item in self.renderer.lines:
                 l = line_item.line()
                 l.setP1(self.renderer.centre)
