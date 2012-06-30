@@ -1,9 +1,10 @@
 from sympy.parsing.sympy_parser import parse_expr
 from PySide import QtCore, QtGui
-from PySide.QtCore import QRectF
+from PySide.QtCore import QRectF, Qt
 
 from RiemannSurface import RiemannSurface
 from SurfaceRenderers import CentralSurfaceRenderer
+from PathManager import PathManager
 
 class Controller(QtCore.QObject):
     def __init__(self, ui):
@@ -24,8 +25,8 @@ class Controller(QtCore.QObject):
         csr = CentralSurfaceRenderer(self.scene_model, self.surface)
         self.surface_renderer = csr
 
-        self.paths = []
-        self.paths_model = None # For the listview
+        self.paths = PathManager(self.ui.paths)
+        self.ui.paths.setModel(self.paths)
 
         self.scroll_locked = False
 
@@ -39,11 +40,14 @@ class Controller(QtCore.QObject):
         # May want to lock scroll-bars on or off
 
     def _connectSlots(self):
-        self.ui.equation.editingFinished.connect(self.surfaceChanged)        
+        self.ui.equation.editingFinished.connect(self.surfaceChanged)
         self.ui.projection_variable.currentIndexChanged.connect(self.setProjection)
         self.ui.primary_mode.currentChanged.connect(self.setPrimaryMode)
         self.surface_renderer.centralPointDragged.connect(self.centralPointDragged)
         self.ui.central_point.editingFinished.connect(self.centralPointSetTextually)
+
+        self.ui.add_path.clicked.connect(self.paths.newPath)
+        self.ui.delete_path.clicked.connect(self.paths.removeSelectedPaths)
 
     def _setStandardIcons(self):
         # Unfortunately Qt Designer doesn't have a way to set the
